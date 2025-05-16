@@ -71,14 +71,9 @@ void ABlueBullet::DisableBullet(){
 void ABlueBullet::OverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
                     bool bFromSweep,const FHitResult& SweepResult){
     AEnemy *Enemy = Cast<AEnemy>(OtherActor);
-    GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan,
-        FString::Printf(TEXT("Overlapped: %s"), *GetNameSafe(OtherActor))
-    );
-    
-    if (Enemy){
-        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("overlap enemy"));
+    if (Enemy && Enemy->IsAlive){
         DisableBullet();
-        //Enemy->Die();
+        Enemy->Hit();
     }
 }
 

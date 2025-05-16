@@ -1,4 +1,3 @@
-
 #include "Enemy.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -9,8 +8,8 @@ AEnemy::AEnemy()
     SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
     SetRootComponent(SphereComp);
     
-    EnemySprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("EnemySprite"));
-    EnemySprite->SetupAttachment(RootComponent);
+    EnemyFlipbook = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("EnemyFlipbook"));
+    EnemyFlipbook->SetupAttachment(RootComponent);
 
 }
 
@@ -21,17 +20,16 @@ void AEnemy::BeginPlay()
         AActor *PlayerActor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerSpaceship::StaticClass());
         if(PlayerActor){
             Player = Cast<APlayerSpaceship>(PlayerActor);
+            CanFollow = true;
         }
     }
-    
-	
 }
 
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
     
-    if(IsAlive && Player){
+    if(IsAlive && Player && CanFollow){
         FVector CurrentLocation = GetActorLocation();
         FVector PlayerLocation = Player->GetActorLocation();
         
@@ -50,9 +48,58 @@ void AEnemy::Tick(float DeltaTime)
             
             SetActorLocation(NewLocation);
         }
-        
-        
+        else {
+            Explosion();
+        }
     }
+}
 
+void AEnemy::Die(){
+    if(!IsAlive) return;
+    
+    IsAlive = false;
+    CanFollow= false;
+    SphereComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    SetActorEnableCollision(false);
+    EnemyFlipbook->SetTranslucentSortPriority(-5);
+    GetWorldTimerManager().SetTimer(FlickerTimer, this, &AEnemy::Flicker, FlickerInterval, true);
+    GetWorldTimerManager().SetTimer(DestoryTimer, this, &AEnemy::OnDestroyTimerTimeout, 1.0f, false, DeathDelay);
+    
+}
+
+void AEnemy::OnDestroyTimerTimeout(){
+    GetWorldTimerManager().ClearTimer(FlickerTimer);
+    Destroy();
+}
+
+void AEnemy::Explosion(){
+    if(!IsAlive) return;
+    IsAlive = false;
+    CanFollow= false;
+    SphereComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    SetActorEnableCollision(false);
+    EnemyFlipbook->SetFlipbook(ExplosionFlipbook);
+    EnemyFlipbook->Play();
+    
+    GetWorldTimerManager().SetTimer(ExplosionTimer, this, &AEnemy::OnDestoryExplosion, 1.0f, false, ExplosionDuration);
+}
+
+void AEnemy::OnDestoryExplosion(){
+    GetWorldTimerManager().ClearTimer(ExplosionTimer);
+    Destroy();
+}
+
+void AEnemy::Flicker(){
+    Transparent = !Transparent;
+    EnemyFlipbook->SetVisibility(!Transparent, true);
+}
+
+void AEnemy::Hit(){
+    if (Health < 0){
+        Die();
+    }
+    else{
+        Health--;
+    }
 }
 

@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,6 +6,7 @@
 #include "PaperSpriteComponent.h"
 #include "Engine/TimerHandle.h"
 #include "PlayerSpaceship.h"
+#include "PaperFlipbookComponent.h"
 #include "Enemy.generated.h"
 
 UCLASS()
@@ -23,10 +22,13 @@ public:
     USphereComponent* SphereComp;
     
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    UPaperSpriteComponent* EnemySprite;
+    UPaperFlipbookComponent* EnemyFlipbook;
     
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     APlayerSpaceship* Player;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPaperFlipbook* ExplosionFlipbook;
     
     UPROPERTY(EditAnywhere)
     int32 Health = 5;
@@ -51,26 +53,23 @@ public:
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float DeathDelay = 2.0f;
-//    
-//    FTimerHandle FlickerTimer;
-//    FTimerHandle DeathTimer;
-
-
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float ExplosionDuration = 0.5f;
+   
+    FTimerHandle FlickerTimer;
+    FTimerHandle DestoryTimer;
+    FTimerHandle ExplosionTimer;
+    
+    bool Transparent = false;
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-//    void BeginDeathSequence();
-//    void Flicker();
-//    void FinishDeath();
-    
-//    UFUNCTION()
-//        void OnOverlapBegin(
-//            UPrimitiveComponent* OverlappedComp,
-//            AActor* OtherActor,
-//            UPrimitiveComponent* OtherComp,
-//            int32 OtherBodyIndex,
-//            bool bFromSweep,
-//            const FHitResult& SweepResult
-//        );
+    void Die();
+    void OnDestroyTimerTimeout();
+    void Hit();
+    void Flicker();
+    void Explosion();
+    void OnDestoryExplosion();
 
 };
