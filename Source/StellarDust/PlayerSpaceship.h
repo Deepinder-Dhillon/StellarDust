@@ -70,7 +70,7 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     bool CanShoot = true;
     
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float ShootCooldownInSec = 0.3f;
     
     FTimerHandle ShootCooldownTimer;

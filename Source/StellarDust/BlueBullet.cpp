@@ -1,8 +1,8 @@
 #include "BlueBullet.h"
 #include "Enemy.h"
+#include "EnemyBullet.h"
 
-ABlueBullet::ABlueBullet()
-{
+ABlueBullet::ABlueBullet(){
         PrimaryActorTick.bCanEverTick = true;
         
         SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
@@ -12,26 +12,19 @@ ABlueBullet::ABlueBullet()
         BulletSprite->SetupAttachment(RootComponent);
         
         MovementDirection = FVector2D(0.0f, 10.0f);
-    
-        
-    
-
 }
 
-void ABlueBullet::BeginPlay()
-{
+void ABlueBullet::BeginPlay(){
 	Super::BeginPlay();
-    if (AActor* O = GetOwner())
-        {
+    if (AActor* O = GetOwner()){
             SphereComp->IgnoreActorWhenMoving(O, true);
         }
-
-        SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ABlueBullet::OverlapBegin);
+    
+    SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ABlueBullet::OverlapBegin);
 	
 }
 
-void ABlueBullet::Tick(float DeltaTime)
-{
+void ABlueBullet::Tick(float DeltaTime){
 	Super::Tick(DeltaTime);
     
     if(IsLaunched){
@@ -42,38 +35,39 @@ void ABlueBullet::Tick(float DeltaTime)
         
         SetActorLocation(NewLocation, true);
     }
-
 }
 
 void ABlueBullet::Launch(){
     if(IsLaunched) return;
-        IsLaunched = true;
+    
+    IsLaunched = true;
     float DeleteTime = 2.0f;
     GetWorldTimerManager().SetTimer(DeleteTimer, this, &ABlueBullet::OnDeleteTimerTimeout, 1.0f, false, DeleteTime);
-    
 }
 
 void ABlueBullet::OnDeleteTimerTimeout(){
     Destroy();
-    
 }
 
 void ABlueBullet::DisableBullet(){
     if(IsDisabled) return;
+    
     IsDisabled = true;
-    
-    
     SphereComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     BulletSprite->DestroyComponent();
-    
 }
 
 void ABlueBullet::OverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
                     bool bFromSweep,const FHitResult& SweepResult){
     AEnemy *Enemy = Cast<AEnemy>(OtherActor);
+    AEnemyBullet *EnemyBullet = Cast<AEnemyBullet>(OtherActor);
+    
     if (Enemy && Enemy->IsAlive){
         DisableBullet();
         Enemy->Hit();
+    }
+    if(EnemyBullet){
+        DisableBullet();
     }
 }
 

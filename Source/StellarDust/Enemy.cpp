@@ -99,7 +99,12 @@ void AEnemy::Hit(){
         Die();
     }
     else{
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("Current Health: %d"), Health));
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
+
+
         Health--;
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("Current Health: %d"), Health));
     }
 }
 

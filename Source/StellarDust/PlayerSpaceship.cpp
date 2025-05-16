@@ -82,7 +82,7 @@ void APlayerSpaceship::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Completed, this, &APlayerSpaceship::MoveCompleted);
         EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Canceled, this, &APlayerSpaceship::MoveCompleted);
         
-        EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Started, this, &APlayerSpaceship::Shoot);
+//        EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Started, this, &APlayerSpaceship::Shoot);
         EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Triggered, this, &APlayerSpaceship::Shoot);
         }
 }
