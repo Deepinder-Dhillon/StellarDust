@@ -10,6 +10,15 @@ AEnemy::AEnemy()
     
     EnemyFlipbook = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("EnemyFlipbook"));
     EnemyFlipbook->SetupAttachment(RootComponent);
+    
+    CenterSpawn = CreateDefaultSubobject<USceneComponent>(TEXT("CenterSpawn"));
+    CenterSpawn->SetupAttachment(EnemyFlipbook);
+    
+    LeftSpawn = CreateDefaultSubobject<USceneComponent>(TEXT("LeftSpawn"));
+    LeftSpawn->SetupAttachment(EnemyFlipbook);
+    
+    RightSpawn = CreateDefaultSubobject<USceneComponent>(TEXT("RightSpawn"));
+    RightSpawn->SetupAttachment(EnemyFlipbook);
 
 }
 
@@ -23,6 +32,7 @@ void AEnemy::BeginPlay()
             CanFollow = true;
         }
     }
+    SetupShootTimer();
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -36,16 +46,18 @@ void AEnemy::Tick(float DeltaTime)
         FVector DirectionToPlayer = PlayerLocation - CurrentLocation;
         float DistanceToPlayer = DirectionToPlayer.Size();
         
-        
-        if( DistanceToPlayer > StopDistance){
+        if(DistanceToPlayer > StopDistance){
             DirectionToPlayer.Normalize();
-            float Xoffset = DirectionToPlayer.X * HorizontalSpeed * DeltaTime;
-            
-            float Zoffset = -VerticalSpeed * DeltaTime;
             FVector NewLocation = CurrentLocation;
-            NewLocation.X += Xoffset;
-            NewLocation.Z += Zoffset;
             
+            if(CurrentLocation.Z > PlayerLocation.Z){
+                float Xoffset = DirectionToPlayer.X * HorizontalSpeed * DeltaTime;
+                NewLocation.X += Xoffset;
+            }
+        
+            float Zoffset = -VerticalSpeed * DeltaTime;
+            
+            NewLocation.Z += Zoffset;
             SetActorLocation(NewLocation);
         }
         else {
@@ -54,57 +66,76 @@ void AEnemy::Tick(float DeltaTime)
     }
 }
 
-void AEnemy::Die(){
-    if(!IsAlive) return;
-    
-    IsAlive = false;
-    CanFollow= false;
-    SphereComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    SetActorEnableCollision(false);
-    EnemyFlipbook->SetTranslucentSortPriority(-5);
-    GetWorldTimerManager().SetTimer(FlickerTimer, this, &AEnemy::Flicker, FlickerInterval, true);
-    GetWorldTimerManager().SetTimer(DestoryTimer, this, &AEnemy::OnDestroyTimerTimeout, 1.0f, false, DeathDelay);
-    
-}
-
-void AEnemy::OnDestroyTimerTimeout(){
-    GetWorldTimerManager().ClearTimer(FlickerTimer);
-    Destroy();
-}
-
 void AEnemy::Explosion(){
     if(!IsAlive) return;
+    
     IsAlive = false;
     CanFollow= false;
-    SphereComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     SetActorEnableCollision(false);
+    
+    SphereComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    EnemyFlipbook->SetTranslucentSortPriority(-5);
     EnemyFlipbook->SetFlipbook(ExplosionFlipbook);
     EnemyFlipbook->Play();
     
-    GetWorldTimerManager().SetTimer(ExplosionTimer, this, &AEnemy::OnDestoryExplosion, 1.0f, false, ExplosionDuration);
+    GetWorldTimerManager().SetTimer(ExplosionTimer, this, &AEnemy::OnDestoryExplosion, ExplosionDuration, false);
 }
 
 void AEnemy::OnDestoryExplosion(){
     GetWorldTimerManager().ClearTimer(ExplosionTimer);
+    GetWorldTimerManager().ClearTimer(ShootTimer);
+    GetWorldTimerManager().ClearTimer(ShootCooldownTimer);
     Destroy();
-}
-
-void AEnemy::Flicker(){
-    Transparent = !Transparent;
-    EnemyFlipbook->SetVisibility(!Transparent, true);
 }
 
 void AEnemy::Hit(){
     if (Health < 0){
-        Die();
+        Explosion();
     }
     else{
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("Current Health: %d"), Health));
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
-
-
         Health--;
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("Current Health: %d"), Health));
     }
 }
 
+void AEnemy::SetupShootTimer(){
+    if (IsAlive) {
+        float RandomTime = FMath::RandRange(MinShootInterval, MaxShootInterval);
+        GetWorldTimerManager().SetTimer(ShootTimer, this, &AEnemy::ShootAtPlayer,
+                                        RandomTime, false);
+    }
+}
+
+void AEnemy::ShootAtPlayer()
+{
+    if (IsAlive && CanShoot && BulletClass && GetWorld()) {
+        CanShoot = false;
+
+        if (BulletSpawn == 1) {
+            FVector SpawnLocation = CenterSpawn->GetComponentLocation();
+            AEnemyBullet* Bullet = GetWorld()->SpawnActor<AEnemyBullet>(BulletClass, SpawnLocation, FRotator::ZeroRotator);
+            if (Bullet) {
+                Bullet->Launch();
+            }
+        }
+        else {
+            FVector LeftSpawnLocation = LeftSpawn->GetComponentLocation();
+            FVector RightSpawnLocation = RightSpawn->GetComponentLocation();
+            
+            AEnemyBullet* LeftBullet = GetWorld()->SpawnActor<AEnemyBullet>(BulletClass, LeftSpawnLocation,
+                                                                            FRotator::ZeroRotator);
+            AEnemyBullet* RightBullet = GetWorld()->SpawnActor<AEnemyBullet>(BulletClass, RightSpawnLocation,
+                                                                             FRotator::ZeroRotator);
+            
+            if (LeftBullet) LeftBullet->Launch();
+            if (RightBullet) RightBullet->Launch();
+        }
+        GetWorldTimerManager().SetTimer(ShootCooldownTimer, this, &AEnemy::OnShootCooldownTimerTimeout,
+                                        ShootCooldownInSec, false);
+    }
+    SetupShootTimer();
+}
+
+void AEnemy::OnShootCooldownTimerTimeout()
+{
+    CanShoot = true;
+}

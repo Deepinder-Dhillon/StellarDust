@@ -81,8 +81,7 @@ void APlayerSpaceship::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayerSpaceship::MoveTriggered);
         EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Completed, this, &APlayerSpaceship::MoveCompleted);
         EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Canceled, this, &APlayerSpaceship::MoveCompleted);
-        
-//        EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Started, this, &APlayerSpaceship::Shoot);
+
         EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Triggered, this, &APlayerSpaceship::Shoot);
         }
 }
@@ -103,8 +102,7 @@ void APlayerSpaceship::Shoot(const FInputActionValue& Value){
         CanShoot = false;
         
         TArray<USceneComponent*> Points;
-            switch (UpgradeLevel)
-            {
+            switch (UpgradeLevel){
                 case 2:
                     Points = { LeftSpawn, RightSpawn };
                     break;
@@ -118,21 +116,15 @@ void APlayerSpaceship::Shoot(const FInputActionValue& Value){
                     break;
             }
         
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = this;
-        for (auto* P : Points)
-            {
+        for (auto* P : Points) {
                 FVector Loc = P->GetComponentLocation();
-                ABlueBullet* B = GetWorld()->SpawnActor<ABlueBullet>(BulletClass, Loc, FRotator::ZeroRotator, SpawnParams);
-                if (B) B->Launch();
+                ABlueBullet* Bullet = GetWorld()->SpawnActor<ABlueBullet>(BulletClass, Loc, FRotator::ZeroRotator);
+                if (Bullet) Bullet->Launch();
             }
         
         
         GetWorldTimerManager().SetTimer(ShootCooldownTimer, this, &APlayerSpaceship:: OnShootCooldownTimerTimeout, 1.0f, false, ShootCooldownInSec);
-        
     }
-    
-    
 }
 
 void APlayerSpaceship::OnShootCooldownTimerTimeout(){

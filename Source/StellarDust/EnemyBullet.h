@@ -18,10 +18,16 @@ public:
     USphereComponent* SphereComp;
     
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    UPaperSpriteComponent* EnemyBulletSprite;
+    UPaperFlipbookComponent* EnemyBulletFlipbook;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPaperFlipbook* EnemyHitFlipbook;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float EnemyBulletSpeed = 300.0f;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float DeleteTime = 2.0f;
     
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     APlayerSpaceship* Player;
@@ -35,7 +41,11 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     bool IsDisabled = false;
     
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float HitDuration = 0.5f;
+    
     FTimerHandle DeleteTimer;
+    FTimerHandle HitTimer;
     
 	AEnemyBullet();
 
@@ -45,6 +55,7 @@ public:
     void Launch();
     void DisableBullet();
     void OnDeleteTimerTimeout();
+    void OnHitDestroy();
     
     UFUNCTION()
     void OverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
