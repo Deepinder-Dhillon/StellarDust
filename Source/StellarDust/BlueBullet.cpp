@@ -1,6 +1,7 @@
 // BlueBullet.cpp
 #include "BlueBullet.h"
 #include "Enemy.h"
+#include "TurretEnemy.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
 
@@ -34,7 +35,7 @@ void ABlueBullet::Launch(){
     
     IsLaunched = true;
     
-    ProjectileComp->Velocity = FVector(0.f, 0.f, MovementDirection.Y) * MovementSpeed;
+    ProjectileComp->Velocity = FVector(MovementDirection.X, MovementDirection.Y, 0.f) * MovementSpeed;
     GetWorldTimerManager().SetTimer(DeleteTimer,this, &ABlueBullet::OnDeleteTimerTimeout, DestroyDelay, false);
 }
 
@@ -68,9 +69,15 @@ void ABlueBullet::OnDeleteTimerTimeout(){
 void ABlueBullet::OverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                int32 OtherBodyIndex, bool bFromSweep,const FHitResult& SweepResult){
     AEnemy *Enemy = Cast<AEnemy>(OtherActor);
+    ATurretEnemy *TurretEnemy = Cast<ATurretEnemy>(OtherActor);
     
-    if (Enemy && Enemy->IsAlive){
+    
+    if (Enemy && Enemy->IsAlive) {
         DisableBullet();
         Enemy->Hit();
+    }
+    else if (TurretEnemy &&  TurretEnemy->IsAlive){
+        DisableBullet();
+        TurretEnemy->Hit();
     }
 }

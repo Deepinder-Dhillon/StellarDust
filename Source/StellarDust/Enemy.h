@@ -95,7 +95,7 @@ public:
     void Explosion();
     void OnDestoryExplosion();
     void SetupShootTimer();
-    void ShootAtPlayer();
+    virtual void ShootAtPlayer();
     void OnShootCooldownTimerTimeout();
 
 };

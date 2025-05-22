@@ -1,8 +1,6 @@
-// PlayerSpaceship.cpp
 #include "PlayerSpaceship.h"
 
-APlayerSpaceship::APlayerSpaceship()
-{
+APlayerSpaceship::APlayerSpaceship() {
     PrimaryActorTick.bCanEverTick = true;
     
     CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComp"));
@@ -22,58 +20,55 @@ APlayerSpaceship::APlayerSpaceship()
 
 }
 
-void APlayerSpaceship::BeginPlay()
-{
+void APlayerSpaceship::BeginPlay() {
     Super::BeginPlay();
     
     APlayerController* PlayerController = Cast<APlayerController>(Controller);
     if (PlayerController){
         UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+        
         if(Subsystem){
             Subsystem->AddMappingContext(IMC_Spaceship, 0);
         }
     }
 }
 
-void APlayerSpaceship::Tick(float DeltaTime)
-{
+void APlayerSpaceship::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
     
-    if (MovementDirection.IsNearlyZero())
-            return;
-    
+    if (MovementDirection.IsNearlyZero()) return;
     
     FVector2D DistanceToMove = MovementDirection * MovementSpeed * DeltaTime;
     FVector CurrentLocation = GetActorLocation();
     FVector NewLocation = CurrentLocation + FVector(DistanceToMove.X, 0.0f, 0.0f);
     
-    if (!IsInMapBoundsHorizontal(NewLocation.X)){
+    if (!IsInMapBoundsHorizontal(NewLocation.X)) {
         NewLocation -= FVector(DistanceToMove.X, 0.0f, 0.0f);
     }
-    NewLocation += FVector(0.0f, 0.0f, DistanceToMove.Y);
-    if (!IsInMapBoundsVertical(NewLocation.Z)){
-        NewLocation -= FVector(0.0f, 0.0f, DistanceToMove.Y);
+    
+    NewLocation += FVector(0.0f, DistanceToMove.Y, 0.0f);
+    
+    if (!IsInMapBoundsVertical(NewLocation.Y)) {
+        NewLocation -= FVector(0.0f, DistanceToMove.Y, 0.0f);
     }
+    
     SetActorLocation(NewLocation, true);
 
 }
 
-bool APlayerSpaceship::IsInMapBoundsHorizontal(float Xpos)
-{
+bool APlayerSpaceship::IsInMapBoundsHorizontal(float Xpos) {
     bool Result = true;
     Result = (Xpos > HorizontalLimits.X) && (Xpos < HorizontalLimits.Y);
     return Result;
 }
 
-bool APlayerSpaceship::IsInMapBoundsVertical(float Zpos)
-{
+bool APlayerSpaceship::IsInMapBoundsVertical(float Ypos) {
     bool Result = true;
-    Result = (Zpos > VerticalLimits.X) && (Zpos < VerticalLimits.Y);
+    Result = (Ypos > VerticalLimits.X) && (Ypos < VerticalLimits.Y);
     return Result;
 }
 
-void APlayerSpaceship::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
+void APlayerSpaceship::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
     UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
     
@@ -92,8 +87,7 @@ void APlayerSpaceship::MoveTriggered(const FInputActionValue& Value){
     MovementDirection = DeltaXY;
 }
 
-void APlayerSpaceship::MoveCompleted(const FInputActionValue& Value){
-    
+void APlayerSpaceship::MoveCompleted(const FInputActionValue& Value) {
     MovementDirection = FVector2D(0.0f, 0.0f);
 }
 
@@ -103,16 +97,15 @@ void APlayerSpaceship::Shoot(const FInputActionValue& Value){
         
         TArray<USceneComponent*> Points;
             switch (UpgradeLevel){
+                    
+                case 1:
+                    Points = {CenterSpawn};
+                    break;
                 case 2:
-                    Points = { LeftSpawn, RightSpawn };
+                    Points = {LeftSpawn, RightSpawn};
                     break;
-
-                case 3:
-                    Points = { CenterSpawn, LeftSpawn, RightSpawn };
-                    break;
-
-                default: // Level 1
-                    Points = { CenterSpawn };
+                default:
+                    Points = {CenterSpawn, LeftSpawn, RightSpawn};
                     break;
             }
         
@@ -121,7 +114,6 @@ void APlayerSpaceship::Shoot(const FInputActionValue& Value){
                 ABlueBullet* Bullet = GetWorld()->SpawnActor<ABlueBullet>(BulletClass, Loc, FRotator::ZeroRotator);
                 if (Bullet) Bullet->Launch();
             }
-        
         
         GetWorldTimerManager().SetTimer(ShootCooldownTimer, this, &APlayerSpaceship:: OnShootCooldownTimerTimeout, 1.0f, false, ShootCooldownInSec);
     }

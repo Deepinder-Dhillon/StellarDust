@@ -1,5 +1,3 @@
-// StellarDustGameModeBase.cpp
-
 #include "StellarDustGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"

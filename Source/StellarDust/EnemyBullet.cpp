@@ -11,10 +11,9 @@ AEnemyBullet::AEnemyBullet()
     EnemyBulletFlipbook = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("EnemyBulletFlipbook"));
     EnemyBulletFlipbook->SetupAttachment(RootComponent);
     
-    EnemyBulletDirection = FVector2D(0.0f, 5.0f);
 }
-void AEnemyBullet::BeginPlay()
-{
+
+void AEnemyBullet::BeginPlay() {
 	Super::BeginPlay();
     
     SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AEnemyBullet::OverlapBegin);
@@ -24,19 +23,16 @@ void AEnemyBullet::BeginPlay()
     }
 }
 
-void AEnemyBullet::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+void AEnemyBullet::Tick(float DeltaTime) {
+    Super::Tick(DeltaTime);
 
-    if(IsLaunched){
-        FVector2D DistanceToMove = EnemyBulletDirection * EnemyBulletSpeed * DeltaTime;
-        FVector CurrentLocation = GetActorLocation();
-        FVector NewLocation = CurrentLocation + FVector(0.0f, 0.0f, -DistanceToMove.Y);
-        
-        SetActorLocation(NewLocation, true);
+    if (IsLaunched) {
+        FVector2D Delta2D = EnemyBulletDirection * EnemyBulletSpeed * DeltaTime;
+        FVector   NewLoc = GetActorLocation() + FVector(Delta2D, 0.f);
+        SetActorLocation(NewLoc, true);
     }
-
 }
+
 
 void AEnemyBullet::Launch(){
     if(IsLaunched) return;
@@ -62,13 +58,14 @@ void AEnemyBullet::DisableBullet(){
     GetWorldTimerManager().SetTimer(HitTimer, this, &AEnemyBullet::OnHitDestroy, HitDuration, false);
 }
 
-void AEnemyBullet::OnHitDestroy(){
+void AEnemyBullet::OnHitDestroy() {
     GetWorldTimerManager().ClearTimer(HitTimer);
     EnemyBulletFlipbook->DestroyComponent();
 }
 
-void AEnemyBullet::OverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-                    bool bFromSweep,const FHitResult& SweepResult){
+void AEnemyBullet::OverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+                                UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+                                bool bFromSweep,const FHitResult& SweepResult) {
     
     APlayerSpaceship* HitPlayer = Cast<APlayerSpaceship>(OtherActor);
     if (HitPlayer){

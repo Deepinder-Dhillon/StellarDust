@@ -20,29 +20,29 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     UPaperFlipbookComponent* EnemyBulletFlipbook;
     
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Bullet")
     UPaperFlipbook* EnemyHitFlipbook;
     
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Bullet")
     float EnemyBulletSpeed = 300.0f;
     
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Bullet")
     float DeleteTime = 2.0f;
     
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Bullet")
     APlayerSpaceship* Player;
     
-    UPROPERTY(BlueprintReadWrite)
-    FVector2D EnemyBulletDirection;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Bullet")
+    FVector2D EnemyBulletDirection = FVector2D(0.f, -1.0f);
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Bullet")
+    float HitDuration = 0.5f;
     
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     bool IsLaunched = true;
     
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     bool IsDisabled = false;
-    
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float HitDuration = 0.5f;
     
     FTimerHandle DeleteTimer;
     FTimerHandle HitTimer;
@@ -58,7 +58,7 @@ public:
     void OnHitDestroy();
     
     UFUNCTION()
-    void OverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-                      bool bFromSweep,const FHitResult& SweepResult);
+    void OverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                      int32 OtherBodyIndex, bool bFromSweep,const FHitResult& SweepResult);
 
 };

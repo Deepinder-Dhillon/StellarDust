@@ -50,14 +50,14 @@ void AEnemy::Tick(float DeltaTime)
             DirectionToPlayer.Normalize();
             FVector NewLocation = CurrentLocation;
             
-            if(CurrentLocation.Z > PlayerLocation.Z){
+            if(CurrentLocation.Y > PlayerLocation.Y){
                 float Xoffset = DirectionToPlayer.X * HorizontalSpeed * DeltaTime;
                 NewLocation.X += Xoffset;
             }
         
             float Zoffset = -VerticalSpeed * DeltaTime;
             
-            NewLocation.Z += Zoffset;
+            NewLocation.Y += Zoffset;
             SetActorLocation(NewLocation);
         }
         else {
